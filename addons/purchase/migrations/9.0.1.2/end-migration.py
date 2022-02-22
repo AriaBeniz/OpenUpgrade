@@ -22,6 +22,18 @@ def deferred_pol_qty_received_compute(env):
     pol_todo._compute_qty_received()
 
 
+
+column_copies = {
+    'purchase_order_line': [
+        ('qty_invoiced_8', 'qty_invoiced', None),
+        ('qty_received_8', 'qty_received', None)
+    ],
+}
+
 @openupgrade.migrate(use_env=True)
 def migrate(env, version):
+    cr = env.cr
     deferred_pol_qty_received_compute(env)
+    openupgrade.copy_columns(cr, column_copies)
+
+

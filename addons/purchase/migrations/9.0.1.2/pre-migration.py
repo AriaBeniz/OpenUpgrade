@@ -15,8 +15,9 @@ column_copies = {
 
 field_renames = [
     # renamings with oldname attribute - They also need the rest of operations
-    ('purchase.order', 'purchase_order', 'fiscal_position',
-     'fiscal_position_id'),
+    ('purchase.order', 'purchase_order', 'fiscal_position','fiscal_position_id'),
+    ('purchase.order.line', 'purchase_order_line', 'qty_invoiced', 'qty_invoiced_8'),
+    ('purchase.order.line', 'purchase_order_line', 'qty_received', 'qty_received_8'),
 ]
 
 column_renames = {

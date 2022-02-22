@@ -630,6 +630,10 @@ class BaseModel(object):
         # determine the model's name
         name = cls._name or (len(parents) == 1 and parents[0]) or cls.__name__
 
+        if name in parents:
+            if name not in pool:
+                raise TypeError("Model %r does not exist in registry.(cls:%r)" % (name, cls))
+
         # determine the module that introduced the model
         original_module = pool[name]._original_module if name in parents else cls._module
 
@@ -639,7 +643,7 @@ class BaseModel(object):
         for parent in parents:
             if parent not in pool:
                 raise TypeError('The model "%s" specifies an unexisting parent class "%s"\n'
-                    'You may need to add a dependency on the parent class\' module.' % (name, parent))
+                    'You may need to add a dependency on the parent class\' module. (cls:%s)' % (name, parent, cls))
             parent_class = type(pool[parent])
             bases += parent_class.__bases__
             hierarchy = type(name, (hierarchy, parent_class), {'_register': False})
@@ -3154,7 +3158,11 @@ class BaseModel(object):
             # dependencies of custom fields may not exist; ignore that case
             exceptions = (Exception,) if field.manual else ()
             with tools.ignore(*exceptions):
-                field.setup_triggers(self.env)
+                try:
+                    field.setup_triggers(self.env)
+                except Exception as e:
+                    print("cls=%s, field=%s" % (cls, field))
+                    raise e
 
         # add invalidation triggers on model dependencies
         if cls._depends:

@@ -41,6 +41,23 @@ class sale_report(osv.osv):
     }
     _order = 'date desc'
 
+    def select_companies_rates(self):
+        return """
+            SELECT
+                r.currency_id,
+                COALESCE(r.company_id, c.id) as company_id,
+                r.rate,
+                r.name AS date_start,
+                (SELECT name FROM res_currency_rate r2
+                 WHERE r2.name > r.name AND
+                       r2.currency_id = r.currency_id AND
+                       (r2.company_id is null or r2.company_id = c.id)
+                 ORDER BY r2.name ASC
+                 LIMIT 1) AS date_end
+            FROM res_currency_rate r
+            JOIN res_company c ON (r.company_id is null or r.company_id = c.id)
+        """
+
     def _select(self):
         select_str = """
             WITH currency_rate as (%s)
@@ -67,7 +84,7 @@ class sale_report(osv.osv):
                     p.product_tmpl_id,
                     partner.country_id as country_id,
                     partner.commercial_partner_id as commercial_partner_id
-        """ % self.pool['res.currency']._select_companies_rates()
+        """ % self.select_companies_rates()
         return select_str
 
     def _from(self):

@@ -626,7 +626,13 @@ class Field(object):
         # traverse path and add triggers on fields along the way
         for i, name in enumerate(path):
             model = env[field.comodel_name if field else self.model_name]
-            field = model._fields[name]
+            try:
+                field = model._fields[name]
+            except Exception as e:
+                print('Field error, Model:%s, path_str:%s' % (model, path_str))
+                print(e)
+                raise e
+            
             # env[self.model_name] --- path[:i] --> model with field
 
             if field is self:

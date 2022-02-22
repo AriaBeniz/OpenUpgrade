@@ -53,7 +53,9 @@ def recreate_analytic_lines(cr):
     extra column work_id in case other modules need to fill some fields for
     each created line.
     """
-    cr.execute("ALTER TABLE account_analytic_line ADD task_id integer")
+
+    # task_id column already exists
+    #cr.execute("ALTER TABLE account_analytic_line ADD task_id integer")
     cr.execute("ALTER TABLE account_analytic_line ADD work_id integer")
     if not openupgrade.column_exists(cr, 'account_analytic_line',
                                      'is_timesheet'):
@@ -97,3 +99,4 @@ def migrate(env, version):
         state in ('uninstalled', 'to remove') and
         exists (select id from ir_module_module where name='hr_timesheet'
         and state in ('to upgrade', 'to_install', 'installed'))''')
+    

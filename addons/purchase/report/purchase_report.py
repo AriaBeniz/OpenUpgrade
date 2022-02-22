@@ -45,6 +45,25 @@ class purchase_report(osv.osv):
         'commercial_partner_id': fields.many2one('res.partner', 'Commercial Entity', readonly=True),
     }
     _order = 'date desc, price_total desc'
+
+
+    def select_companies_rates(self):
+        return """
+            SELECT
+                r.currency_id,
+                COALESCE(r.company_id, c.id) as company_id,
+                r.rate,
+                r.name AS date_start,
+                (SELECT name FROM res_currency_rate r2
+                 WHERE r2.name > r.name AND
+                       r2.currency_id = r.currency_id AND
+                       (r2.company_id is null or r2.company_id = c.id)
+                 ORDER BY r2.name ASC
+                 LIMIT 1) AS date_end
+            FROM res_currency_rate r
+            JOIN res_company c ON (r.company_id is null or r.company_id = c.id)
+        """
+
     def init(self, cr):
         tools.sql.drop_view_if_exists(cr, 'purchase_report')
         cr.execute("""
@@ -118,4 +137,7 @@ class purchase_report(osv.osv):
                     partner.commercial_partner_id,
                     analytic_account.id
             )
-        """ % self.pool['res.currency']._select_companies_rates())
+        """ % self.select_companies_rates())
+    
+
+        
