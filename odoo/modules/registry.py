@@ -322,7 +322,13 @@ class Registry(Mapping):
 
         for model in models:
             model._auto_init()
-            model.init()
+            try:
+                model.init()
+            except Exception as e:
+                _logger.error("error:%s" % e)
+                _logger.error("model:%s" % model)
+                raise e
+            
             cr.commit()
 
         for model in models:
